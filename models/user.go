@@ -15,7 +15,7 @@ type User struct {
 // Save stores the user in the database
 func (user *User) Save(db *badger.DB) error {
 	err := services.StoreValues(map[string][]byte{
-		"user." + user.Email + ".password": []byte(user.Password),
+		"user:" + user.Email + ":password": []byte(user.Password),
 	}, db)
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (user *User) Save(db *badger.DB) error {
 
 // GetUserByEmail Returns a user by Email
 func GetUserByEmail(db *badger.DB, email string) (*User, error) {
-	password, err := services.GetValue([]byte("user."+email+".password"), db)
+	password, err := services.GetValue([]byte("user:"+email+":password"), db)
 	if err != nil {
 		return nil, err
 	}
