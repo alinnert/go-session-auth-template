@@ -3,6 +3,7 @@ package server
 import (
 	"auth-server/handlers"
 	"auth-server/middleware"
+	"auth-server/services/badgerstore"
 	"auth-server/values"
 
 	"github.com/dgraph-io/badger"
@@ -11,11 +12,14 @@ import (
 )
 
 func routes(app *chi.Mux, db *badger.DB) {
+	sessionManager := values.GetSessionManager()
+	sessionManager.Store = badgerstore.NewWithPrefix(db, "session:")
+
 	// Global middlewares
 	app.Use(chiMiddleware.Logger)
 	app.Use(chiMiddleware.Recoverer)
 	app.Use(middleware.BadgerDB(db))
-	app.Use(values.GetSessionManager().LoadAndSave)
+	app.Use(sessionManager.LoadAndSave)
 
 	// Routes
 	app.Get("/", handlers.GetIndex())
