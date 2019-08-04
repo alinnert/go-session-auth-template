@@ -58,6 +58,10 @@ A route for debugging purposes. It returns all values stored in the Badger store
 
 Once you added a user you can fetch its data from the data store using this route.
 
+### `GET /profile`
+
+If you're signed in it returns your user name. Otherwise it tells you that you're not signed in.
+
 ### `GET /public`
 
 This should return a JSON in any case. Similar to `GET /`.
