@@ -47,10 +47,6 @@ func (bs *BadgerStore) Find(token string) ([]byte, bool, error) {
 		return nil, false, err
 	}
 
-	if err := txn.Commit(); err != nil {
-		return nil, false, err
-	}
-
 	return data, true, nil
 }
 
