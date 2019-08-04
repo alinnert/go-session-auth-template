@@ -30,17 +30,18 @@ func GetValue(key []byte, db *badger.DB) (string, error) {
 			return err
 		}
 
-		err = item.Value(func(val []byte) error {
-			value = string(val)
-			return nil
-		})
+		val, err := item.ValueCopy(nil)
 		if err != nil {
 			return err
 		}
+
+		value = string(val)
+
 		return nil
 	})
 	if err != nil {
 		return "", err
 	}
+
 	return value, nil
 }
