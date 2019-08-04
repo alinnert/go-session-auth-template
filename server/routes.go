@@ -19,6 +19,7 @@ func routes(app *chi.Mux, db *badger.DB) {
 
 	// Routes
 	app.Get("/", handlers.GetIndex())
+	app.Get("/db", handlers.GetDb())
 	app.Get("/user", handlers.GetUser())
 	app.Get("/public", handlers.GetPublic())
 	app.With(middleware.Authenticate()).
