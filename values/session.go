@@ -10,7 +10,7 @@ import (
 var sessionManager *scs.SessionManager
 
 // GetSession returns a SCS session
-func GetSession() *scs.SessionManager {
+func GetSessionManager() *scs.SessionManager {
 	if sessionManager == nil {
 		sessionManager = scs.New()
 		sessionManager.Lifetime = 30 * time.Hour * 24 * 30

@@ -15,7 +15,7 @@ func SigninHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 		json.NewDecoder(r.Body).Decode(&user)
-		sessionManager := values.GetSession()
+		sessionManager := values.GetSessionManager()
 
 		matchingUser, err := models.GetUserByEmail(
 			r.Context().Value(values.DBContext).(*badger.DB),

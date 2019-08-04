@@ -15,7 +15,7 @@ func routes(app *chi.Mux, db *badger.DB) {
 	app.Use(chiMiddleware.Logger)
 	app.Use(chiMiddleware.Recoverer)
 	app.Use(middleware.BadgerDB(db))
-	app.Use(values.GetSession().LoadAndSave)
+	app.Use(values.GetSessionManager().LoadAndSave)
 
 	// Routes
 	app.Get("/", handlers.GetIndex())

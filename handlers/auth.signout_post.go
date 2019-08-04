@@ -8,7 +8,7 @@ import (
 // SignoutHandler POST /auth/signout
 func SignoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionManager := values.GetSession()
+		sessionManager := values.GetSessionManager()
 		err := sessionManager.Destroy(r.Context())
 		if err != nil {
 			WriteErrorResponse(w, http.StatusInternalServerError, err,

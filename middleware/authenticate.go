@@ -10,7 +10,7 @@ import (
 func Authenticate() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sessionManager := values.GetSession()
+			sessionManager := values.GetSessionManager()
 			user := sessionManager.GetString(r.Context(), "user")
 
 			if user == "" {
