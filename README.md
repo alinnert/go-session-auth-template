@@ -107,7 +107,8 @@ Adds a user to the data store. The password gets hashed and salted using `bcrypt
 ~~~ json
 {
 	"email": "john@doe.com",
-	"password": "secret-password"
+	"password": "secret-password",
+	"password_confirm": "secret-password"
 }
 ~~~
 
@@ -127,3 +128,13 @@ Signs in the user. Creates a session and adds a session cookie to the response. 
 ### `POST /auth/signout`
 
 Deletes the session, and so the user gets signed out.
+
+## Database
+
+This demo uses [BadgerDB](https://github.com/dgraph-io/badger) to store all kinds of values. The following keys are being used:
+
+- `user:<id>:email` ‒ Contains the user's e-mail address
+- `user:<id>:password` ‒ Contains the user's hashed password
+- `user:seq` ‒ Contains the BadgerDB sequence for creating new user IDs
+- `user:email:<e-mail>` ‒ Contains the user ID. This is used to fetch a user by it's e-mail address
+- `session:<session-id>` ‒ Contains (scs) session data
