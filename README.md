@@ -17,25 +17,53 @@ This repo demonstrates how you can implement cookie session based Authentication
 
 ## Try it out
 
-Using bash:
+On Linux/Unix:
 
 ~~~ bash
 go build
 ./auth-server
 ~~~
 
-Using PowerShell:
+On Windows:
 
 ~~~ powershell
 go build
 auth-server.exe
 ~~~
 
-There's also a Makefile that does just that. If you can use the Makefile, you could instead just type:
+There's also a Makefile that does just that (only on Windows). If you can use the Makefile, you could instead just type:
 
 ~~~ bash
 make
 ~~~
+
+## HTTP Responses
+
+For a **successful request** you get a response like this:
+
+~~~json
+{
+	"status": "ok",
+	"data": ...
+}
+~~~
+
+- `status` will always be `"ok"`.
+- `data` can be any type, depending on the request. If there's no data to put in the response it's omited altogether.
+
+For **requests that lead to any kind of error** you get a response like this:
+
+~~~json
+{
+	"status": "error",
+	"message": "...",
+	"details": "..."
+}
+~~~
+
+- `status` will always be `"error"`.
+- `message` will contain a custom message that tells you more about what has happened. This is for debugging purposes only. To check for the error in your client code, please consult the HTTP status code.
+- `details` is the content of any `err` variable if one is involved. If not, `details` is omited.
 
 ## Routes
 
