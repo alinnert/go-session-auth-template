@@ -25,13 +25,14 @@ func SignupHandler() http.HandlerFunc {
 
 		user.Password = string(hash)
 
-		err = user.Save(r.Context().Value(values.DBContext).(*badger.DB))
+		db := r.Context().Value(values.DBContext).(*badger.DB)
+		err = user.Save(db)
 		if err != nil {
 			WriteErrorResponse(w, http.StatusInternalServerError, err,
 				"Error while storing user in the database.")
 			return
 		}
 
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+		WriteResponse(w, nil)
 	}
 }
