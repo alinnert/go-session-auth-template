@@ -5,27 +5,70 @@ import (
 	"auth-server/values"
 	"encoding/json"
 	"net/http"
+	"regexp"
 
 	"github.com/dgraph-io/badger"
 	"golang.org/x/crypto/bcrypt"
 )
 
+type signupHandlerRequestBody struct {
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	PasswordConfirm string `json:"password_confirm"`
+}
+
 // SignupHandler POST /auth/signup
 func SignupHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var user models.User
-		json.NewDecoder(r.Body).Decode(&user)
+		var input signupHandlerRequestBody
+		json.NewDecoder(r.Body).Decode(&input)
 
-		hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+		db := r.Context().Value(values.DBContext).(*badger.DB)
+
+		// Validate input
+		matched, err := regexp.Match(`^.*`, []byte(input.Email))
+		if err != nil {
+			WriteErrorResponse(w, http.StatusInternalServerError, err,
+				"Error while validating email.")
+			return
+		}
+		if !matched {
+			WriteErrorResponse(w, http.StatusBadRequest, nil,
+				"Field \"email\" does not contain a valid e-mail.")
+			return
+		}
+
+		if input.Password != input.PasswordConfirm {
+			WriteErrorResponse(w, http.StatusBadRequest, nil, "Passwords don't match")
+			return
+		}
+
+		userExists, err := models.UserExistsWithEmail(db, input.Email)
+		if err != nil {
+			WriteErrorResponse(w, http.StatusInternalServerError, err,
+				"Error while checking if user exists.")
+			return
+		}
+		if userExists {
+			WriteErrorResponse(w, http.StatusConflict, nil,
+				"This E-Mail is already in use.")
+			return
+		}
+
+		// Hash password
+		hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 14)
 		if err != nil {
 			WriteErrorResponse(w, http.StatusInternalServerError, err,
 				"Error while hashing password.")
 			return
 		}
 
-		user.Password = string(hash)
+		// Create user
+		user := &models.User{
+			Email:    input.Email,
+			Password: string(hash),
+		}
 
-		db := r.Context().Value(values.DBContext).(*badger.DB)
 		err = user.Save(db)
 		if err != nil {
 			WriteErrorResponse(w, http.StatusInternalServerError, err,

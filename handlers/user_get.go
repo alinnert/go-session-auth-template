@@ -25,7 +25,13 @@ func GetUser() http.HandlerFunc {
 			emails[0],
 		)
 		if err != nil {
-			WriteErrorResponse(w, http.StatusUnauthorized, err, "User not found.")
+			WriteErrorResponse(w, http.StatusUnauthorized, err,
+				"Error while retrieving user.")
+			return
+		}
+
+		if user == nil {
+			WriteErrorResponse(w, http.StatusNotFound, nil, "User not found.")
 			return
 		}
 

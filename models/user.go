@@ -52,6 +52,28 @@ func GetUserByEmail(db *badger.DB, email string) (*User, error) {
 	return user, nil
 }
 
+// UserExistsWithEmail checks if a user with this email already exists
+func UserExistsWithEmail(db *badger.DB, email string) (bool, error) {
+	userExists := false
+	err := db.View(func(txn *badger.Txn) error {
+		user, err := getUserByEmail(txn, email)
+		if err != nil {
+			return err
+		}
+
+		if user != nil {
+			userExists = true
+		}
+
+		return nil
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return userExists, nil
+}
+
 func addUser(txn *badger.Txn, id string, user *User) error {
 	err := badgerhelpers.SetMultiple(txn, &map[string][]byte{
 		"user:email:" + user.Email: []byte(id),
