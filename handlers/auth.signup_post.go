@@ -26,7 +26,7 @@ func SignupHandler() http.HandlerFunc {
 		db := r.Context().Value(values.DBContext).(*badger.DB)
 
 		// Validate input
-		matched, err := regexp.Match(`^.*`, []byte(input.Email))
+		matched, err := regexp.Match(`^.+@.+\..+$`, []byte(input.Email))
 		if err != nil {
 			WriteErrorResponse(w, http.StatusInternalServerError, err,
 				"Error while validating email.")
