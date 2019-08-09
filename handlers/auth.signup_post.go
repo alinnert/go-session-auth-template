@@ -20,8 +20,13 @@ type signupHandlerRequestBody struct {
 // SignupHandler POST /auth/signup
 func SignupHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var input signupHandlerRequestBody
-		json.NewDecoder(r.Body).Decode(&input)
+		input := &signupHandlerRequestBody{}
+		err := json.NewDecoder(r.Body).Decode(input)
+		if err != nil {
+			WriteErrorResponse(w, http.StatusInternalServerError, err,
+				"Error while parsing request body.")
+			return
+		}
 
 		db := r.Context().Value(values.DBContext).(*badger.DB)
 

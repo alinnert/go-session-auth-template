@@ -10,16 +10,26 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type signinHandlerRequestBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 // SigninHandler POST /auth/signin
 func SigninHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var user models.User
-		json.NewDecoder(r.Body).Decode(&user)
+		input := &signinHandlerRequestBody{}
+		err := json.NewDecoder(r.Body).Decode(input)
+		if err != nil {
+			WriteErrorResponse(w, http.StatusInternalServerError, err,
+				"Error while parsing request body.")
+		}
+
 		sessionManager := values.GetSessionManager()
 
 		matchingUser, err := models.GetUserByEmail(
 			r.Context().Value(values.DBContext).(*badger.DB),
-			user.Email,
+			input.Email,
 		)
 		if err != nil {
 			WriteErrorResponse(w, http.StatusUnauthorized, err,
@@ -29,7 +39,7 @@ func SigninHandler() http.HandlerFunc {
 
 		err = bcrypt.CompareHashAndPassword(
 			[]byte(matchingUser.Password),
-			[]byte(user.Password))
+			[]byte(input.Password))
 		if err != nil {
 			WriteErrorResponse(w, http.StatusUnauthorized, err,
 				"Could not signin with provided credentials.")
@@ -43,7 +53,7 @@ func SigninHandler() http.HandlerFunc {
 			return
 		}
 
-		sessionManager.Put(r.Context(), "user", user.Email)
+		sessionManager.Put(r.Context(), "user", input.Email)
 
 		WriteResponse(w, nil)
 	}
