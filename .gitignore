@@ -1,4 +1,5 @@
 .env
 auth-server.exe
+auth-server
 data.db
 __debug_bin
