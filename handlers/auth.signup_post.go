@@ -61,7 +61,7 @@ func SignupHandler() http.HandlerFunc {
 		}
 
 		// Hash password
-		hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 14)
+		hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
 		if err != nil {
 			WriteErrorResponse(w, http.StatusInternalServerError, err,
 				"Error while hashing password.")
