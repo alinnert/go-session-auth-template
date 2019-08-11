@@ -31,7 +31,7 @@ func SigninHandler() http.HandlerFunc {
 			r.Context().Value(values.DBContext).(*badger.DB),
 			input.Email,
 		)
-		if err != nil {
+		if err != nil || matchingUser == nil {
 			WriteErrorResponse(w, http.StatusUnauthorized, err,
 				"Could not signin with provided credentials.")
 			return
