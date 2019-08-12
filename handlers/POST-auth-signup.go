@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"auth-server/models"
-	"auth-server/services/validator"
 	"auth-server/values"
 	"encoding/json"
 	"net/http"
@@ -12,15 +11,15 @@ import (
 )
 
 type signupHandlerRequestBody struct {
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	PasswordConfirm string `json:"password_confirm"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required,min=6"`
+	PasswordConfirm string `json:"password_confirm" validate:"required,eqfield=Password"`
 }
 
 // SignupHandler POST /auth/signup
 func SignupHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// #region Read request body
+		// #region Validate request body
 		input := &signupHandlerRequestBody{}
 		err := json.NewDecoder(r.Body).Decode(input)
 		if err != nil {
@@ -28,22 +27,11 @@ func SignupHandler() http.HandlerFunc {
 				"Error while parsing request body.")
 			return
 		}
-		// #endregion Read request body
 
-		// #region Validate request body
-		err = validator.Validate(
-			validator.Check(
-				input.Email, "email",
-				validator.StringIsNotEmpty(),
-				validator.StringIsEmail(),
-			),
-			validator.Check(
-				input.Password, "password",
-				validator.StringIsEqualTo(input.PasswordConfirm, "repeated password"),
-				validator.StringMinLength(6),
-			),
-		)
-		if handled := handleValidationErrors(w, err); handled {
+		err = values.ValidateRequest.Struct(input)
+		if err != nil {
+			WriteErrorListResponse(w, http.StatusBadRequest, err,
+				"Request body is not valid.")
 			return
 		}
 		// #endregion Validate request body

@@ -8,7 +8,7 @@ import (
 // GetProfile GET /profile
 func GetProfile() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sessionManager := values.GetSessionManager()
+		sessionManager := values.SessionManager
 		currentUser := sessionManager.GetString(r.Context(), "user")
 
 		if currentUser == "" {

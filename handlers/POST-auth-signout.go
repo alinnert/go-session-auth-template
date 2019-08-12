@@ -9,7 +9,7 @@ import (
 func SignoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// #region Remove session cookie
-		sessionManager := values.GetSessionManager()
+		sessionManager := values.SessionManager
 		err := sessionManager.Destroy(r.Context())
 		if err != nil {
 			WriteErrorResponse(w, http.StatusInternalServerError, err,

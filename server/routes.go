@@ -12,7 +12,7 @@ import (
 )
 
 func routes(app *chi.Mux, db *badger.DB) {
-	sessionManager := values.GetSessionManager()
+	sessionManager := values.SessionManager
 	sessionManager.Store = badgerstore.NewWithPrefix(db, "session:")
 
 	// Global middlewares
