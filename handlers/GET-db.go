@@ -10,6 +10,7 @@ import (
 // GetDb GET /db
 func GetDb() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// #region Read data from database
 		data := map[string][]byte{}
 		db := r.Context().Value(values.DBContext).(*badger.DB)
 		txn := db.NewTransaction(false)
@@ -28,6 +29,7 @@ func GetDb() http.HandlerFunc {
 
 			data[string(item.Key())] = value
 		}
+		// #endregion Read data from database
 
 		WriteResponse(w, data)
 	}

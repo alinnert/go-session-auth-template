@@ -8,6 +8,7 @@ import (
 // SignoutHandler POST /auth/signout
 func SignoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// #region Remove session cookie
 		sessionManager := values.GetSessionManager()
 		err := sessionManager.Destroy(r.Context())
 		if err != nil {
@@ -15,6 +16,7 @@ func SignoutHandler() http.HandlerFunc {
 				"Error while destroying the session.")
 			return
 		}
+		// #endregion Remove session cookie
 
 		WriteResponse(w, nil)
 	}

@@ -13,13 +13,16 @@ import (
 // That way you can check if everything works on the database side.
 func GetUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// #region Get and validate query params
 		emails, ok := r.URL.Query()["email"]
 		if !ok || len(emails[0]) < 1 {
 			WriteErrorResponse(w, http.StatusBadRequest, nil,
 				"Parameter 'email' is missing.")
 			return
 		}
+		// #endregion Get and validate query params
 
+		// #region Get user
 		user, err := models.GetUserByEmail(
 			r.Context().Value(values.DBContext).(*badger.DB),
 			emails[0],
@@ -29,11 +32,11 @@ func GetUser() http.HandlerFunc {
 				"Error while retrieving user.")
 			return
 		}
-
 		if user == nil {
 			WriteErrorResponse(w, http.StatusNotFound, nil, "User not found.")
 			return
 		}
+		// #endregion Get user
 
 		WriteResponse(w, user)
 	}
