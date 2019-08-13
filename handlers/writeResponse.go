@@ -28,8 +28,8 @@ type errorListResponse struct {
 
 // WriteResponse writes the response if it's not an error.
 func WriteResponse(w http.ResponseWriter, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	w.Header().Set("Content-Type", "application/json")
 
 	responseStruct := &response{Status: "ok"}
 
@@ -44,8 +44,8 @@ func WriteResponse(w http.ResponseWriter, data interface{}) {
 func WriteErrorResponse(
 	w http.ResponseWriter, status int, err error, message string,
 ) {
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/json")
 	responseStruct := &errorResponse{Status: "error", Message: message}
 
 	if err != nil {
@@ -60,8 +60,8 @@ func WriteErrorResponse(
 func WriteErrorListResponse(
 	w http.ResponseWriter, status int, errList error, message string,
 ) {
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/json")
 
 	errMessages := []string{}
 
