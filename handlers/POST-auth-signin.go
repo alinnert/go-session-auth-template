@@ -1,13 +1,15 @@
 package handlers
 
 import (
+	"auth-server/globals"
 	"auth-server/models"
-	"auth-server/values"
 	"encoding/json"
 	"net/http"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/dgraph-io/badger"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type signinHandlerRequestBody struct {
@@ -27,7 +29,8 @@ func SigninHandler() http.HandlerFunc {
 			return
 		}
 
-		err = values.ValidateRequest.Struct(input)
+		validate := r.Context().Value(globals.ValidatorContext).(*validator.Validate)
+		err = validate.Struct(input)
 		if err != nil {
 			WriteErrorListResponse(w, http.StatusBadRequest, err,
 				"Request body is not valid.")
@@ -36,7 +39,7 @@ func SigninHandler() http.HandlerFunc {
 		// #endregion Validate request body
 
 		// #region Fetch user
-		db := r.Context().Value(values.DBContext).(*badger.DB)
+		db := r.Context().Value(globals.DBContext).(*badger.DB)
 
 		matchingUser, err := models.GetUserByEmail(db, input.Email)
 		if err != nil || matchingUser == nil {
@@ -59,7 +62,7 @@ func SigninHandler() http.HandlerFunc {
 		// #endregion Check password
 
 		// #region Set session cookie
-		sessionManager := values.SessionManager
+		sessionManager := r.Context().Value(globals.SessionContext).(*scs.SessionManager)
 
 		err = sessionManager.RenewToken(r.Context())
 		if err != nil {

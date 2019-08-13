@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"auth-server/values"
+	"auth-server/globals"
 	"net/http"
 
 	"github.com/dgraph-io/badger"
@@ -12,7 +12,7 @@ func GetDb() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// #region Read data from database
 		data := map[string][]byte{}
-		db := r.Context().Value(values.DBContext).(*badger.DB)
+		db := r.Context().Value(globals.DBContext).(*badger.DB)
 		txn := db.NewTransaction(false)
 		defer txn.Discard()
 

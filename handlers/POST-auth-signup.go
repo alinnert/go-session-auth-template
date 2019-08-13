@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"auth-server/globals"
 	"auth-server/models"
-	"auth-server/values"
 	"encoding/json"
 	"net/http"
 
 	"github.com/dgraph-io/badger"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type signupHandlerRequestBody struct {
@@ -28,7 +29,8 @@ func SignupHandler() http.HandlerFunc {
 			return
 		}
 
-		err = values.ValidateRequest.Struct(input)
+		validate := r.Context().Value(globals.ValidatorContext).(*validator.Validate)
+		err = validate.Struct(input)
 		if err != nil {
 			WriteErrorListResponse(w, http.StatusBadRequest, err,
 				"Request body is not valid.")
@@ -37,7 +39,7 @@ func SignupHandler() http.HandlerFunc {
 		// #endregion Validate request body
 
 		// #region Check if user already exists
-		db := r.Context().Value(values.DBContext).(*badger.DB)
+		db := r.Context().Value(globals.DBContext).(*badger.DB)
 
 		userExists, err := models.UserExistsWithEmail(db, input.Email)
 		if err != nil {

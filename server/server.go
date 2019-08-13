@@ -1,6 +1,8 @@
 package server
 
 import (
+	"auth-server/globals"
+	"auth-server/middleware"
 	"context"
 	"log"
 	"net/http"
@@ -9,19 +11,33 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	chiMiddleware "github.com/go-chi/chi/middleware"
 )
 
 // StartServer is the main entry point of the application.
 func StartServer() {
-	db := database()
+	// #region Setup global dependencies
+	db := getDatabase()
 	defer db.Close()
+	sessionManager := getSessionManager(db)
+	validator := getValidator()
+	// #endregion Setup global dependencies
 
+	// #region setup routes and global middleware
 	app := chi.NewRouter()
-	routes(app, db)
+	app.Use(chiMiddleware.Logger)
+	app.Use(chiMiddleware.Recoverer)
+	app.Use(middleware.ContextData(map[globals.ContextKey]interface{}{
+		globals.DBContext:       db,
+		globals.SessionContext:  sessionManager,
+		globals.ValidatorContext: validator,
+	}))
+	app.Use(middleware.BadgerDB(db))
+	app.Use(sessionManager.LoadAndSave)
+	setupRoutes(app)
+	// #endregion setup routes and global middleware
 
-	done := make(chan bool, 1)
-	quit := make(chan os.Signal, 1)
-
+	// #region Setup server
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 	addr := ":8080"
 	server := &http.Server{
@@ -32,8 +48,12 @@ func StartServer() {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
 	}
+	// #endregion Setup server
 
-	// Graceful shutdown with [ctrl] + [c]
+	// #region Graceful shutdown with [ctrl] + [c]
+	done := make(chan bool, 1)
+	quit := make(chan os.Signal, 1)
+
 	signal.Notify(quit, os.Interrupt)
 
 	go func() {
@@ -58,4 +78,5 @@ func StartServer() {
 
 	<-done
 	logger.Println("Server stopped")
+	// #endregion Graceful shutdown with [ctrl] + [c]
 }

@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"auth-server/globals"
 	"auth-server/models"
-	"auth-server/values"
 	"net/http"
 
 	"github.com/dgraph-io/badger"
@@ -24,7 +24,7 @@ func GetUser() http.HandlerFunc {
 
 		// #region Get user
 		user, err := models.GetUserByEmail(
-			r.Context().Value(values.DBContext).(*badger.DB),
+			r.Context().Value(globals.DBContext).(*badger.DB),
 			emails[0],
 		)
 		if err != nil {

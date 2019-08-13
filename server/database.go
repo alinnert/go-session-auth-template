@@ -6,7 +6,7 @@ import (
 	"github.com/dgraph-io/badger"
 )
 
-func database() *badger.DB {
+func getDatabase() *badger.DB {
 	badgerOptions := badger.DefaultOptions("data.db")
 
 	// This option should only be used on devices with low RAM (e.g. Raspi)

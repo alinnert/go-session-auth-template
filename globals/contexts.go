@@ -1,4 +1,4 @@
-package values
+package globals
 
 // ContextKey is a key type for request contexts
 type ContextKey string
@@ -8,3 +8,6 @@ const DBContext ContextKey = "db"
 
 // SessionContext session context key
 const SessionContext ContextKey = "session"
+
+// ValidateRequest validator context key
+const ValidatorContext ContextKey = "validate_request"

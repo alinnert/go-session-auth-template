@@ -4,15 +4,16 @@ import (
 	"auth-server/globals"
 	"context"
 	"net/http"
-
-	"github.com/dgraph-io/badger"
 )
 
-// BadgerDB provides DB access through the request context
-func BadgerDB(db *badger.DB) Middleware {
+// ContextData stores some values in the context
+func ContextData(data map[globals.ContextKey]interface{}) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), globals.DBContext, db)
+			ctx := r.Context()
+			for key, item := range data {
+				ctx = context.WithValue(ctx, key, item)
+			}
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
