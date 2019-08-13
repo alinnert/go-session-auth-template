@@ -27,9 +27,9 @@ func StartServer() {
 	app := chi.NewRouter()
 	app.Use(chiMiddleware.Logger)
 	app.Use(chiMiddleware.Recoverer)
-	app.Use(middleware.ContextData(map[globals.ContextKey]interface{}{
-		globals.DBContext:       db,
-		globals.SessionContext:  sessionManager,
+	app.Use(middleware.SetContext(map[globals.ContextKey]interface{}{
+		globals.DBContext:        db,
+		globals.SessionContext:   sessionManager,
 		globals.ValidatorContext: validator,
 	}))
 	app.Use(middleware.BadgerDB(db))

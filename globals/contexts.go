@@ -1,13 +1,13 @@
 package globals
 
 // ContextKey is a key type for request contexts
-type ContextKey string
+type ContextKey int
 
-// DBContext database request context key
-const DBContext ContextKey = "db"
-
-// SessionContext session context key
-const SessionContext ContextKey = "session"
-
-// ValidateRequest validator context key
-const ValidatorContext ContextKey = "validate_request"
+const (
+	// DBContext database request context key
+	DBContext ContextKey = iota
+	// SessionContext session context key
+	SessionContext
+	// ValidatorContext validator context key
+	ValidatorContext
+)
