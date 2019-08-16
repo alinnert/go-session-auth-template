@@ -7,7 +7,8 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
-func getValidator() *validator.Validate {
+// GetValidator creates an Validator instance
+func GetValidator() *validator.Validate {
 	validator := validator.New()
 
 	// With this `validator.ValidationErrors[i].Field()`

@@ -17,10 +17,17 @@ import (
 // StartServer is the main entry point of the application.
 func StartServer() {
 	// #region Setup global dependencies
-	db := getDatabase()
+	db := GetDatabase(&DatabaseOptions{
+		Path: "data.db",
+	})
 	defer db.Close()
-	sessionManager := getSessionManager(db)
-	validator := getValidator()
+
+	sessionManager := GetSessionManager(db, &SessionManagerOptions{
+		StorePrefix: "session:",
+		CookieName:  "sessionid",
+	})
+
+	validator := GetValidator()
 	// #endregion Setup global dependencies
 
 	// #region setup routes and global middleware

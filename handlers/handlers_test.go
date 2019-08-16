@@ -9,15 +9,39 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/dgraph-io/badger"
 )
 
-type handlerTestCase struct {
-	reqMethod, reqRoute string
-	reqBody             *string
-	contextMap          map[globals.ContextKey]interface{}
-	expectedStatus      int
-	expectedBody        string
-	handlerFunc         http.HandlerFunc
+type testRouteOptions struct {
+	name, reqMethod, reqRoute string
+	reqBody                   string
+	contextMap                map[globals.ContextKey]interface{}
+	expectedStatus            int
+	expectedBody              string
+	handlerFunc               http.HandlerFunc
+}
+
+func flushDb(t *testing.T, db *badger.DB) {
+	err := db.Update(func(txn *badger.Txn) error {
+		options := badger.DefaultIteratorOptions
+		options.PrefetchValues = false
+		iter := txn.NewIterator(options)
+		defer iter.Close()
+
+		for iter.Rewind(); iter.Valid(); iter.Next() {
+			item := iter.Item()
+			err := txn.Delete(item.Key())
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func applyContext(
@@ -33,10 +57,10 @@ func applyContext(
 	return req.WithContext(ctx)
 }
 
-func testRoute(t *testing.T, test handlerTestCase) {
+func testRoute(t *testing.T, test *testRouteOptions) *httptest.ResponseRecorder {
 	var bodyReader io.Reader = nil
-	if test.reqBody != nil {
-		bodyReader = bytes.NewBufferString(*test.reqBody)
+	if test.reqBody != "" {
+		bodyReader = bytes.NewBufferString(test.reqBody)
 	}
 
 	req, err := http.NewRequest(
@@ -53,9 +77,11 @@ func testRoute(t *testing.T, test handlerTestCase) {
 	handler := http.HandlerFunc(test.handlerFunc)
 	handler.ServeHTTP(res, req)
 
-	if status := res.Code; status != test.expectedStatus {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, test.expectedStatus)
+	if test.expectedStatus != 0 {
+		if status := res.Code; status != test.expectedStatus {
+			t.Errorf("handler returned wrong status code: got %v want %v",
+				status, test.expectedStatus)
+		}
 	}
 
 	if ctype := res.Header().Get("Content-Type"); ctype != "application/json" {
@@ -63,8 +89,12 @@ func testRoute(t *testing.T, test handlerTestCase) {
 			ctype, "application/json")
 	}
 
-	if body := strings.TrimSpace(res.Body.String()); body != test.expectedBody {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			body, test.expectedBody)
+	if test.expectedBody != "" {
+		if body := strings.TrimSpace(res.Body.String()); body != test.expectedBody {
+			t.Errorf("handler returned unexpected body: got %v want %v",
+				body, test.expectedBody)
+		}
 	}
+
+	return res
 }
