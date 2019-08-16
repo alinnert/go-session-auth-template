@@ -1,7 +1,9 @@
 package handlers_test
 
 import (
+	"auth-server/globals"
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,9 +14,23 @@ import (
 type handlerTestCase struct {
 	reqMethod, reqRoute string
 	reqBody             *string
+	contextMap          map[globals.ContextKey]interface{}
 	expectedStatus      int
 	expectedBody        string
 	handlerFunc         http.HandlerFunc
+}
+
+func applyContext(
+	req *http.Request,
+	items map[globals.ContextKey]interface{},
+) *http.Request {
+	ctx := req.Context()
+
+	for key, item := range items {
+		ctx = context.WithValue(ctx, key, item)
+	}
+
+	return req.WithContext(ctx)
 }
 
 func testRoute(t *testing.T, test handlerTestCase) {
@@ -27,6 +43,10 @@ func testRoute(t *testing.T, test handlerTestCase) {
 		test.reqMethod, test.reqRoute, bodyReader)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if test.contextMap != nil {
+		req = applyContext(req, test.contextMap)
 	}
 
 	res := httptest.NewRecorder()

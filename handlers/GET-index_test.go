@@ -16,6 +16,7 @@ func TestGetIndex(t *testing.T) {
 			handlerFunc:    handlers.GetIndex(),
 		},
 	}
+
 	for _, test := range tests {
 		testRoute(t, test)
 	}
