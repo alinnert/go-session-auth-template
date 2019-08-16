@@ -8,10 +8,9 @@ import (
 )
 
 func setupRoutes(app *chi.Mux) {
-	// Routes
 	app.Get("/", handlers.GetIndex())
 	app.Get("/db", handlers.GetDb())
-	app.Get("/user", handlers.GetUser())
+	app.Get("/user/{email}", handlers.GetUser())
 	app.Get("/profile", handlers.GetProfile())
 	app.Get("/public", handlers.GetPublic())
 	app.With(middleware.Authenticate()).
@@ -20,6 +19,7 @@ func setupRoutes(app *chi.Mux) {
 	app.Route("/auth", func(app chi.Router) {
 		app.Post("/signup", handlers.SignupHandler())
 		app.Post("/signin", handlers.SigninHandler())
-		app.With(middleware.Authenticate()).Post("/signout", handlers.SignoutHandler())
+		app.With(middleware.Authenticate()).
+			Post("/signout", handlers.SignoutHandler())
 	})
 }

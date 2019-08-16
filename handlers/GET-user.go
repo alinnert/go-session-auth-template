@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dgraph-io/badger"
+	"github.com/go-chi/chi"
 )
 
 // GetUser GET /user
@@ -14,29 +15,23 @@ import (
 func GetUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// #region Validate query params
-		emails, ok := r.URL.Query()["email"]
-		if !ok || len(emails[0]) < 1 {
-			WriteErrorResponse(w, http.StatusBadRequest, nil,
-				"Parameter 'email' is missing.")
-			return
-		}
+		email := chi.URLParam(r, "email")
 		// #endregion Get and validate query params
 
 		// #region Get user
-		user, err := models.GetUserByEmail(
-			r.Context().Value(globals.DBContext).(*badger.DB),
-			emails[0],
-		)
+		db := r.Context().Value(globals.DBContext).(*badger.DB)
+		user, err := models.GetUserByEmail(db, email)
 		if err != nil {
 			WriteErrorResponse(w, http.StatusUnauthorized, err,
 				"Error while retrieving user.")
 			return
 		}
+		// #endregion Get user
+
 		if user == nil {
 			WriteErrorResponse(w, http.StatusNotFound, nil, "User not found.")
 			return
 		}
-		// #endregion Get user
 
 		WriteResponse(w, user)
 	}

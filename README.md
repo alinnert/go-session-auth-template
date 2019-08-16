@@ -82,7 +82,7 @@ Test, if the server is running. The response should be:
 
 A route for debugging purposes. It returns all values stored in the Badger store.
 
-### `GET /user?email={email}`
+### `GET /user/{email}`
 
 Once you added a user you can fetch its data from the data store using this route.
 
