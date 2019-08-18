@@ -19,7 +19,7 @@ func GetSessionManager(
 	db *badger.DB, userOptions *SessionManagerOptions,
 ) *scs.SessionManager {
 	sessionManager := scs.New()
-	sessionManager.Lifetime = 30 * time.Hour * 24 * 30
+	sessionManager.Lifetime = time.Hour * 24 * 30
 	sessionManager.Cookie.Name = userOptions.CookieName
 	sessionManager.Cookie.SameSite = http.SameSiteStrictMode
 	sessionManager.Cookie.HttpOnly = true

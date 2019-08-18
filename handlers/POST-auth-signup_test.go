@@ -8,15 +8,15 @@ import (
 	"net/http"
 	"os"
 	"testing"
+
+	"github.com/dgraph-io/badger"
+	"gopkg.in/go-playground/validator.v9"
 )
 
-func TestSignupHandler(t *testing.T) {
-	// #region Setup base requirements
-	validate := server.GetValidator()
-	dbPath := "test.db"
-	db := server.GetDatabase(&server.DatabaseOptions{Path: dbPath})
-
-	testBaseOptions := testRouteOptions{
+func getTestSignupBaseOptions(
+	validate *validator.Validate, db *badger.DB,
+) testRouteOptions {
+	return testRouteOptions{
 		reqMethod:   "POST",
 		reqRoute:    "/auth/signup",
 		handlerFunc: handlers.SignupHandler(),
@@ -25,6 +25,15 @@ func TestSignupHandler(t *testing.T) {
 			globals.DBContext:        db,
 		},
 	}
+}
+
+func TestSignupHandler(t *testing.T) {
+	// #region Setup base requirements
+	validate := server.GetValidator()
+	dbPath := "test.db"
+	db := server.GetDatabase(&server.DatabaseOptions{Path: dbPath})
+
+	testSignupBaseOptions := getTestSignupBaseOptions(validate, db)
 	// #endregion Setup base requirements
 
 	// #region Setup request bodies
@@ -42,7 +51,7 @@ func TestSignupHandler(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		flushDb(t, db)
-		testOptions := testBaseOptions
+		testOptions := testSignupBaseOptions
 		testOptions.reqBody = signupBodyValid
 		testOptions.expectedStatus = http.StatusOK
 		testRoute(t, &testOptions)
@@ -50,7 +59,7 @@ func TestSignupHandler(t *testing.T) {
 
 	t.Run("invalid e-mail", func(t *testing.T) {
 		flushDb(t, db)
-		testOptions := testBaseOptions
+		testOptions := testSignupBaseOptions
 		testOptions.reqBody = signupBodyInvalidEmail
 		testOptions.expectedStatus = http.StatusBadRequest
 		testRoute(t, &testOptions)
@@ -58,7 +67,7 @@ func TestSignupHandler(t *testing.T) {
 
 	t.Run("passwords don't match", func(t *testing.T) {
 		flushDb(t, db)
-		testOptions := testBaseOptions
+		testOptions := testSignupBaseOptions
 		testOptions.reqBody = signupBodyPasswordsNoMatch
 		testOptions.expectedStatus = http.StatusBadRequest
 		testRoute(t, &testOptions)
@@ -66,7 +75,7 @@ func TestSignupHandler(t *testing.T) {
 
 	t.Run("user already exists", func(t *testing.T) {
 		flushDb(t, db)
-		testOptions := testBaseOptions
+		testOptions := testSignupBaseOptions
 		testOptions.reqBody = signupBodyValid
 		testOptions.expectedStatus = http.StatusOK
 		testRoute(t, &testOptions)
@@ -82,8 +91,7 @@ func TestSignupHandler(t *testing.T) {
 	err := os.RemoveAll(dbPath)
 	if err != nil {
 		t.Log("Could not delete test database.")
-		t.Log("Please delete the folder" + dbPath + " manually")
+		t.Log("Please delete the folder" + dbPath + " manually.")
 	}
-	os.Exit(0)
 	// #endregion Clean-up
 }

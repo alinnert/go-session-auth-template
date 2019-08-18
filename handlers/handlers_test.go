@@ -22,6 +22,7 @@ type testRouteOptions struct {
 	handlerFunc               http.HandlerFunc
 }
 
+// #region Helper functions
 func flushDb(t *testing.T, db *badger.DB) {
 	err := db.Update(func(txn *badger.Txn) error {
 		options := badger.DefaultIteratorOptions
@@ -57,7 +58,12 @@ func applyContext(
 	return req.WithContext(ctx)
 }
 
-func testRoute(t *testing.T, test *testRouteOptions) *httptest.ResponseRecorder {
+// #endregion Helper functions
+
+func testRoute(
+	t *testing.T, test *testRouteOptions,
+) *httptest.ResponseRecorder {
+	// #region Setup test
 	var bodyReader io.Reader = nil
 	if test.reqBody != "" {
 		bodyReader = bytes.NewBufferString(test.reqBody)
@@ -75,8 +81,11 @@ func testRoute(t *testing.T, test *testRouteOptions) *httptest.ResponseRecorder 
 
 	res := httptest.NewRecorder()
 	handler := http.HandlerFunc(test.handlerFunc)
-	handler.ServeHTTP(res, req)
 
+	handler.ServeHTTP(res, req)
+	// #endregion Setup test
+
+	// #region Check result
 	if test.expectedStatus != 0 {
 		if status := res.Code; status != test.expectedStatus {
 			t.Errorf("handler returned wrong status code: got %v want %v",
@@ -95,6 +104,7 @@ func testRoute(t *testing.T, test *testRouteOptions) *httptest.ResponseRecorder 
 				body, test.expectedBody)
 		}
 	}
+	// #endregion Check result
 
 	return res
 }
