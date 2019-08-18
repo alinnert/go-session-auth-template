@@ -10,7 +10,8 @@ import (
 func setupRoutes(app *chi.Mux) {
 	app.Get("/", handlers.GetIndex())
 	app.Get("/db", handlers.GetDb())
-	app.Get("/user/{email}", handlers.GetUser())
+	app.With(middleware.UserFromURLParam("email")).
+		Get("/user/{email}", handlers.GetUser())
 	app.Get("/profile", handlers.GetProfile())
 	app.Get("/public", handlers.GetPublic())
 	app.With(middleware.Authenticate()).

@@ -4,10 +4,12 @@ package globals
 type ContextKey int
 
 const (
-	// DBContext database request context key
+	// DBContext provides access to the database
 	DBContext ContextKey = iota
-	// SessionContext session context key
+	// SessionContext provides access to the sessionManager
 	SessionContext
-	// ValidatorContext validator context key
+	// ValidatorContext provides access to the validator
 	ValidatorContext
+	// UserContext represents a user struct
+	UserContext
 )
