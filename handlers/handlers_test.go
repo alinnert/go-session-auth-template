@@ -45,6 +45,15 @@ func flushDb(t *testing.T, db *badger.DB) {
 	}
 }
 
+func findCookie(cookies []*http.Cookie, name string) *http.Cookie {
+	for _, cookie := range cookies {
+		if cookie.Name == name {
+			return cookie
+		}
+	}
+	return nil
+}
+
 func applyContext(
 	req *http.Request,
 	items map[globals.ContextKey]interface{},

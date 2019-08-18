@@ -36,10 +36,11 @@ func TestSigninHandler(t *testing.T) {
 	// #region Setup base requirements
 	validate := server.GetValidator()
 	dbPath := "test.db"
+	sessionCookieName := "sessionid"
 	db := server.GetDatabase(&server.DatabaseOptions{Path: dbPath})
 	sessionManager := scs.New()
 	sessionManager.Lifetime = time.Hour * 24 * 30
-	sessionManager.Cookie.Name = "sessionid"
+	sessionManager.Cookie.Name = sessionCookieName
 	sessionManager.Cookie.SameSite = http.SameSiteStrictMode
 	sessionManager.Cookie.HttpOnly = true
 	sessionManager.Store = badgerstore.NewWithPrefix(db, "session:")
@@ -87,7 +88,12 @@ func TestSigninHandler(t *testing.T) {
 		testOptions = testSigninBaseOptions
 		testOptions.reqBody = signinBodyValid
 		testOptions.expectedStatus = http.StatusUnauthorized
-		testRoute(t, &testOptions)
+		res := testRoute(t, &testOptions)
+
+		sessionCookie := findCookie(res.Result().Cookies(), sessionCookieName)
+		if sessionCookie != nil {
+			t.Fatalf("Expected session cookie to not exist, got %s", sessionCookie.String())
+		}
 
 		// Sign up user with valid credentials
 		testOptions = testSignupBaseOptions
@@ -99,7 +105,15 @@ func TestSigninHandler(t *testing.T) {
 		testOptions = testSigninBaseOptions
 		testOptions.reqBody = signinBodyValid
 		testOptions.expectedStatus = http.StatusOK
-		testRoute(t, &testOptions)
+		res = testRoute(t, &testOptions)
+
+		sessionCookie = findCookie(res.Result().Cookies(), sessionCookieName)
+		if sessionCookie == nil {
+			t.Fatal("Expected there to be a session cookie, but there's none.")
+		}
+		if !sessionCookie.HttpOnly {
+			t.Fatalf("Expected session cookie to be httpOnly, but it isn't.")
+		}
 
 		// Try another unknown user
 		testOptions = testSigninBaseOptions
