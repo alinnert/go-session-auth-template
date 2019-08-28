@@ -23,6 +23,7 @@ func UserFromURLParam(paramName string) Middleware {
 			if err != nil {
 				handlers.WriteErrorResponse(w, http.StatusNotFound, err,
 					"Error while retrieving user.")
+				return
 			}
 
 			ctx = context.WithValue(ctx, globals.UserContext, user)
